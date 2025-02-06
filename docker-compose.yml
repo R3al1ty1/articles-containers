@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  chrome-vnc:
+    build: .
+    platform: linux/amd64
+    container_name: chrome_container
+    ports:
+      - "6080:6080"
+    environment:
+      - DISPLAY=:99
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
