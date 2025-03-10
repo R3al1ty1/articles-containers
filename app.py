@@ -22,14 +22,9 @@ def launch_chrome_container():
     
     host_port_novnc = get_free_port()
     host_port_squid = get_free_port()
-    
-    # Собираем образ, если его еще нет
-    try:
-        client.images.get("chrome-vnc")
-    except docker.errors.ImageNotFound:
-        image, build_logs = client.images.build(path=".", tag="chrome-vnc")
-    
-    # Запускаем контейнер
+
+    image, build_logs = client.images.build(path=".", tag="chrome-vnc")
+
     container = client.containers.run(
         "chrome-vnc",
         name=container_name,
