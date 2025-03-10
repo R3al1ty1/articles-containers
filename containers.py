@@ -2,6 +2,10 @@ import docker
 import random
 import string
 import socket
+import re
+
+
+client = docker.from_env()
 
 def get_free_port():
     """Возвращает свободный порт на хосте."""
@@ -10,18 +14,17 @@ def get_free_port():
         return s.getsockname()[1]
 
 def launch_chrome_container():
-    client = docker.from_env()
-    
+    """Запускает контейнер с Chrome и возвращает его tag и порты."""
     random_tag = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
     container_name = f"chrome_container_{random_tag}"
     
     host_port_novnc = get_free_port()
     host_port_squid = get_free_port()
-    
+
     image, build_logs = client.images.build(path=".", tag="chrome-vnc")
-    
+
     container = client.containers.run(
-        image.id,
+        "chrome-vnc",
         name=container_name,
         ports={
             '6080/tcp': host_port_novnc,
@@ -42,6 +45,81 @@ def launch_chrome_container():
             "squid": host_port_squid
         }
     }
+
+
+def extract_tag_from_name(name):
+    """Извлекает tag из имени контейнера."""
+    match = re.search(r'chrome_container_([a-z0-9]+)$', name)
+    if match:
+        return match.group(1)
+    return None
+
+def find_container_by_tag(tag):
+    """Находит контейнер по тегу используя имя контейнера."""
+    # Ищем среди всех запущенных контейнеров
+    containers = client.containers.list()
+    
+    for container in containers:
+        # Проверяем, содержит ли имя контейнера наш тег
+        if tag in container.name:
+            # Получаем порты контейнера
+            container_data = client.api.inspect_container(container.id)
+            port_mappings = container_data['NetworkSettings']['Ports']
+            
+            novnc_port = None
+            if '6080/tcp' in port_mappings and port_mappings['6080/tcp']:
+                novnc_port = port_mappings['6080/tcp'][0]['HostPort']
+            
+            squid_port = None
+            if '3128/tcp' in port_mappings and port_mappings['3128/tcp']:
+                squid_port = port_mappings['3128/tcp'][0]['HostPort']
+            
+            return {
+                "container_id": container.id,
+                "container_name": container.name,
+                "random_tag": tag,
+                "host_ports": {
+                    "noVNC": novnc_port,
+                    "squid": squid_port
+                }
+            }
+    
+    return None
+
+def find_all_chrome_containers():
+    """Находит все контейнеры Chrome на основе имени."""
+    containers = client.containers.list()
+    
+    result = []
+    for container in containers:
+        # Если имя контейнера начинается с chrome_container
+        if container.name.startswith('chrome_container'):
+            tag = extract_tag_from_name(container.name)
+            
+            # Получаем порты контейнера
+            container_data = client.api.inspect_container(container.id)
+            port_mappings = container_data['NetworkSettings']['Ports']
+            
+            novnc_port = None
+            if '6080/tcp' in port_mappings and port_mappings['6080/tcp']:
+                novnc_port = port_mappings['6080/tcp'][0]['HostPort']
+            
+            squid_port = None
+            if '3128/tcp' in port_mappings and port_mappings['3128/tcp']:
+                squid_port = port_mappings['3128/tcp'][0]['HostPort']
+            
+            result.append({
+                "container_id": container.id,
+                "container_name": container.name,
+                "random_tag": tag,
+                "host_ports": {
+                    "noVNC": novnc_port,
+                    "squid": squid_port
+                }
+            })
+    
+    return result
+
 
 if __name__ == "__main__":
     container_info = launch_chrome_container()
