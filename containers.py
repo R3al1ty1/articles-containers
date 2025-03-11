@@ -3,6 +3,7 @@ import random
 import string
 import socket
 import re
+import os
 
 
 client = docker.from_env()
@@ -25,6 +26,9 @@ def launch_chrome_container():
 
     container_name = f"chrome_container_{random_tag}"
 
+    downloads_dir = os.path.join("downloads", random_tag)
+    os.makedirs(downloads_dir, exist_ok=True)
+
     host_port_novnc = get_free_port()
     host_port_squid = get_free_port()
 
@@ -40,6 +44,12 @@ def launch_chrome_container():
         environment={
             'DISPLAY': ':99'
         },
+        volumes={
+            os.path.abspath(downloads_dir): {
+                'bind': '/root/Downloads',
+                'mode': 'rw'
+            }
+        },
         detach=True
     )
 
@@ -50,7 +60,8 @@ def launch_chrome_container():
         "host_ports": {
             "noVNC": host_port_novnc,
             "squid": host_port_squid
-        }
+        },
+        "downloads_path": os.path.abspath(downloads_dir)
     }
 
 
