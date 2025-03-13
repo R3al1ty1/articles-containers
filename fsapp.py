@@ -1,7 +1,8 @@
 import shutil
 import os
 import uvicorn
-from fastapi import FastAPI, Request, HTTPException
+import redis
+from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from containers import (
@@ -13,21 +14,59 @@ from containers import (
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+redis_client = redis.Redis(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    decode_responses=True
+)
 
-@app.get("/create")
-def create_container():
-    """Создает новый контейнер и возвращает его информацию."""
+
+def get_redis():
+    return redis_client
+
+
+@app.get("/create/{user_id}")
+def create_container(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
+    """Создает контейнер и связывает его с user_id в Redis"""
+    if not user_id:
+        raise HTTPException(400, "Требуется user_id")
+
+    existing_tag = redis_db.get(f"user:{user_id}")
+    if existing_tag:
+        return {
+            "status": "exists",
+            "container_info": find_container_by_tag(existing_tag),
+            "access_url": f"http://147.45.241.240:8000/access?user_id={user_id}"
+        }
+
     container_info = launch_chrome_container()
     tag = container_info["random_tag"]
+
+    redis_db.setex(f"user:{user_id}", 86400, tag)
+
     return {
+        "status": "created",
         "container_info": container_info,
-        "access_url": f"http://147.45.241.240:8000/{tag}"
+        "access_url": f"http://147.45.241.240:8000/access?user_id={user_id}"
     }
 
 
-@app.get("/{random_tag}")
-def access_container(random_tag: str, request: Request):
-    """Перенаправляет на noVNC порт контейнера."""
+@app.get("/access/{user_id}")
+def access_container(
+    user_id: str,
+    request: Request,
+    redis_db: redis.Redis = Depends(get_redis)
+):
+    """Перенаправляет на контейнер пользователя через Redis"""
+    if not user_id:
+        raise HTTPException(400, "Требуется user_id")
+
+    random_tag = redis_db.get(f"user:{user_id}")
+    if not random_tag:
+        raise HTTPException(404, "Контейнер не найден для данного пользователя")
+
     container_info = find_container_by_tag(random_tag)
     if not container_info:
         raise HTTPException(404, "Контейнер не найден или не запущен")
