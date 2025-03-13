@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chrome Containers</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { color: #333; }
+        ul { list-style-type: none; padding: 0; }
+        li { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        a { color: #0066cc; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .button { display: inline-block; padding: 10px 15px; background-color: #0066cc; color: white;
+                 border-radius: 4px; text-decoration: none; margin-top: 20px; }
+        .button:hover { background-color: #0055aa; }
+    </style>
+</head>
+<body>
+    <h1>Chrome Containers</h1>
+    <a href="/create" class="button">Create New Container</a>
+    <h2>Active Containers:</h2>
+    <ul>
+        {% for container in containers %}
+        <li>
+            <strong>{{ container.container_name }}</strong> (Tag: {{ container.random_tag }})<br>
+            noVNC Port: {{ container.host_ports.noVNC }}<br>
+            <a href="/{{ container.random_tag }}">Access Container</a> |
+            <a href="http://localhost:{{ container.host_ports.noVNC }}" target="_blank">Direct noVNC Link</a>
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

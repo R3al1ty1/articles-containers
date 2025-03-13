@@ -1,11 +1,28 @@
-version: "3.8"
+version: '3.8'
 
 services:
-  chrome-vnc:
-    build: .
-    container_name: chrome_container
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
     ports:
-      - "6080:6080"
+      - "8000:8000"
     environment:
-      - DISPLAY=:99
-    restart: unless-stopped
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    volumes:
+      - ./containers:/app/containers
+      - ./data:/app/data
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --requirepass your_strong_password
+
+volumes:
+  redis_data:
