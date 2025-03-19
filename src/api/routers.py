@@ -21,7 +21,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 
-@router.get("/create/{user_id}")
+@router.post("/create/{user_id}")
 def create_container(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
     """Создает контейнер и связывает его с user_id в Redis"""
     if not user_id:
@@ -76,7 +76,7 @@ def access_container(
     return RedirectResponse(target_url)
 
 
-@router.get("/delete/{user_id}")
+@router.delete("/delete/{user_id}")
 def delete_container(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
     """Останавливает и удаляет контейнер, связанный с user_id"""
     try:
