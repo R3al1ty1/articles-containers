@@ -1,14 +1,19 @@
 import shutil
 import os
 import redis
+import re
+import zipfile
+import io
 from fastapi import Request, HTTPException, Depends, APIRouter
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from containers import (
     find_all_chrome_containers,
     find_container_by_tag,
-    launch_chrome_container
+    launch_chrome_container,
+    stop_container
 )
+from fastapi.responses import StreamingResponse
 from src.core.database import get_redis
 
 
@@ -71,6 +76,28 @@ def access_container(
     return RedirectResponse(target_url)
 
 
+@router.get("/delete/{user_id}")
+def delete_container(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
+    """Останавливает и удаляет контейнер, связанный с user_id"""
+    try:
+        if not user_id:
+            raise HTTPException(400, "Требуется user_id")
+
+        tag = redis_db.get(f"user:{user_id}")
+        if not tag:
+            return {"status": "not_found", "message": "Контейнер не найден"}
+
+        container_info = find_container_by_tag(tag)
+        if not container_info:
+            return {"status": "not_found", "message": "Контейнер не найден"}
+
+        stop_container(container_info)
+        redis_db.delete(f"user:{user_id}")
+
+    except Exception as e:
+        raise HTTPException(500, f"Ошибка при удалении контейнера: {str(e)}")
+
+
 @router.get("/containers")
 def list_containers():
     """Возвращает список всех запущенных контейнеров."""
@@ -104,3 +131,40 @@ def delete_directory(random_tag: str):
         return {"status": "success", "message": "Директория удалена"}
     except Exception as e:
         raise HTTPException(500, f"Ошибка удаления: {str(e)}")
+
+
+@router.get("/download-files/{random_tag}")
+async def download_files(random_tag: str):
+    """
+    Возвращает все файлы из директории контейнера в виде ZIP-архива
+    """
+    if not re.match("^[a-zA-Z0-9]{8}$", random_tag):
+        raise HTTPException(400, "Некорректный формат тега")
+
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    dir_path = os.path.join(base_dir, "downloads", random_tag)
+
+    if not os.path.exists(dir_path):
+        raise HTTPException(404, "Директория не найдена")
+
+    zip_buffer = io.BytesIO()
+
+    try:
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for root, _, files in os.walk(dir_path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, dir_path)
+                    zipf.write(file_path, arcname)
+    except Exception as e:
+        raise HTTPException(500, f"Ошибка создания архива: {str(e)}")
+
+    zip_buffer.seek(0)
+    return StreamingResponse(
+        iter([zip_buffer.getvalue()]),
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f"attachment; filename={random_tag}_files.zip",
+            "Content-Length": str(zip_buffer.getbuffer().nbytes)
+        }
+    )

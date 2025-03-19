@@ -4,6 +4,7 @@ import string
 import socket
 import re
 import os
+import shutil
 
 
 client = docker.from_env()
@@ -104,6 +105,17 @@ def find_container_by_tag(tag):
             }
 
     return None
+
+
+def stop_container(container_info):
+    try:
+        container = client.containers.get(container_info["container_id"])
+
+        container.stop()
+        container.remove(force=True)
+
+    except docker.errors.NotFound:
+        return {"status": "error", "message": "Контейнер уже был удален"}
 
 
 def find_all_chrome_containers():
