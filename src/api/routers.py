@@ -120,8 +120,7 @@ def delete_directory(random_tag: str):
     if not container_info:
         raise HTTPException(404, "Контейнер не найден")
 
-    dir_path = (os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-                + random_tag)
+    dir_path = os.path.join("downloads", random_tag)
 
     if not dir_path or not os.path.exists(dir_path):
         raise HTTPException(404, "Директория не найдена")
@@ -141,8 +140,7 @@ async def download_files(random_tag: str):
     if not re.match("^[a-zA-Z0-9]{8}$", random_tag):
         raise HTTPException(400, "Некорректный формат тега")
 
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    dir_path = os.path.join(base_dir, "downloads", random_tag)
+    dir_path = os.path.join("downloads", random_tag)
 
     if not os.path.exists(dir_path):
         raise HTTPException(404, "Директория не найдена")
