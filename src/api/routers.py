@@ -132,11 +132,12 @@ def delete_directory(random_tag: str):
         raise HTTPException(500, f"Ошибка удаления: {str(e)}")
 
 
-@router.get("/download-files/{random_tag}")
-async def download_files(random_tag: str):
+@router.get("/download-files/{user_id}")
+async def download_files(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
     """
     Возвращает все файлы из директории контейнера в виде ZIP-архива
     """
+    random_tag = redis_db.get(f"user:{user_id}")
     if not re.match("^[a-zA-Z0-9]{8}$", random_tag):
         raise HTTPException(400, "Некорректный формат тега")
 
