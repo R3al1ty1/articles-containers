@@ -26,8 +26,9 @@ def launch_chrome_container():
     )
 
     container_name = f"chrome_container_{random_tag}"
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    downloads_dir = os.path.join(base_dir, "downloads", random_tag)
 
-    downloads_dir = os.path.join("downloads", random_tag)
     os.makedirs(downloads_dir, exist_ok=True)
 
     host_port_novnc = get_free_port()
