@@ -117,9 +117,16 @@ def index(request: Request):
     )
 
 
-@router.delete("/delete-directory/{random_tag}")
-def delete_directory(random_tag: str):
+@router.delete("/delete-directory/{user_id}")
+def delete_directory(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
     """Удаляет директорию контейнера по его тегу."""
+    if not user_id:
+        raise HTTPException(400, "Требуется user_id")
+
+    random_tag = redis_db.get(f"user:{user_id}")
+    if not random_tag:
+        return {"status": "not_found", "message": "Контейнер не найден"}
+
     container_info = find_container_by_tag(random_tag)
     if not container_info:
         raise HTTPException(404, "Контейнер не найден")
@@ -138,6 +145,7 @@ def delete_directory(random_tag: str):
 
 @router.get("/download-files/{user_id}")
 async def download_files(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
+    """Возвращает архив файлов пользователя."""
     try:
         random_tag = redis_db.get(f"user:{user_id}")
         
