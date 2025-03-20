@@ -16,6 +16,7 @@ services:
       - ./containers:/app/containers
       - ./data:/app/data
       - /var/run/docker.sock:/var/run/docker.sock
+      - /root/downloads:/root/downloads
 
   redis:
     image: redis:alpine
