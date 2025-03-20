@@ -26,7 +26,7 @@ def launch_chrome_container():
     )
 
     container_name = f"chrome_container_{random_tag}"
-    downloads_dir = os.path.join("downloads", random_tag)
+    downloads_dir = os.path.join("/root", "downloads", random_tag)
 
     os.makedirs(downloads_dir, exist_ok=True)
 

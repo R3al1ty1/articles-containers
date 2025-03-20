@@ -120,7 +120,7 @@ def delete_directory(random_tag: str):
     if not container_info:
         raise HTTPException(404, "Контейнер не найден")
 
-    dir_path = os.path.join("downloads", random_tag)
+    dir_path = os.path.join("/root", "downloads", random_tag)
 
     if not dir_path or not os.path.exists(dir_path):
         raise HTTPException(404, "Директория не найдена")
@@ -141,7 +141,7 @@ async def download_files(user_id: str, redis_db: redis.Redis = Depends(get_redis
     if not re.match("^[a-zA-Z0-9]{8}$", random_tag):
         raise HTTPException(400, "Некорректный формат тега")
 
-    dir_path = os.path.join("downloads", random_tag)
+    dir_path = os.path.join("/root", "downloads", random_tag)
 
     if not os.path.exists(dir_path):
         raise HTTPException(404, "Директория не найдена")
