@@ -131,13 +131,15 @@ def delete_directory(random_tag: str):
     except Exception as e:
         raise HTTPException(500, f"Ошибка удаления: {str(e)}")
 
-
 @router.get("/download-files/{user_id}")
 async def download_files(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
     """
-    Возвращает все файлы из директории контейнера в виде ZIP-архива
+    Возвращает все файлы из директории контейнера в виде ZIP-архива.
     """
     random_tag = redis_db.get(f"user:{user_id}")
+    if not random_tag:
+        raise HTTPException(400, "Тег для пользователя не найден")
+    random_tag = random_tag.decode("utf-8")
     if not re.match("^[a-zA-Z0-9]{8}$", random_tag):
         raise HTTPException(400, "Некорректный формат тега")
 
@@ -146,8 +148,13 @@ async def download_files(user_id: str, redis_db: redis.Redis = Depends(get_redis
     if not os.path.exists(dir_path):
         raise HTTPException(404, "Директория не найдена")
 
-    zip_buffer = io.BytesIO()
+    file_count = 0
+    for root, _, files in os.walk(dir_path):
+        file_count += len(files)
+    if file_count == 0:
+        raise HTTPException(404, "В директории нет файлов")
 
+    zip_buffer = io.BytesIO()
     try:
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
             for root, _, files in os.walk(dir_path):
@@ -160,7 +167,7 @@ async def download_files(user_id: str, redis_db: redis.Redis = Depends(get_redis
 
     zip_buffer.seek(0)
     return StreamingResponse(
-        iter([zip_buffer.getvalue()]),
+        zip_buffer,
         media_type="application/zip",
         headers={
             "Content-Disposition": f"attachment; filename={random_tag}_files.zip",
