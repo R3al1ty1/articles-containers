@@ -23,7 +23,7 @@ services:
       - "6378:6378"
     volumes:
       - redis_data:/data
-    command: redis-server --requirepass your_strong_password
+    command: redis-server --port 6378
 
 volumes:
   redis_data:
