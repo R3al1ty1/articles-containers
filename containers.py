@@ -76,13 +76,10 @@ def extract_tag_from_name(name):
 
 def find_container_by_tag(tag):
     """Находит контейнер по тегу используя имя контейнера."""
-    # Ищем среди всех запущенных контейнеров
     containers = client.containers.list()
 
     for container in containers:
-        # Проверяем, содержит ли имя контейнера наш тег
         if tag in container.name:
-            # Получаем порты контейнера
             container_data = client.api.inspect_container(container.id)
             port_mappings = container_data['NetworkSettings']['Ports']
 
@@ -124,11 +121,9 @@ def find_all_chrome_containers():
 
     result = []
     for container in containers:
-        # Если имя контейнера начинается с chrome_container
         if container.name.startswith('chrome_container'):
             tag = extract_tag_from_name(container.name)
 
-            # Получаем порты контейнера
             container_data = client.api.inspect_container(container.id)
             port_mappings = container_data['NetworkSettings']['Ports']
 
