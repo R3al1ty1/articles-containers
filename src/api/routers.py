@@ -138,29 +138,52 @@ async def download_files(user_id: str, redis_db: redis.Redis = Depends(get_redis
         random_tag = redis_db.get(user_id)
         
         if not random_tag:
-            raise HTTPException(status_code=404, detail=f"No files found for user ID: {user_id}")
+            raise HTTPException(status_code=404, detail=f"No tag found for user ID: {user_id}")
         
+        # Формируем путь к директории с файлами
         dir_path = os.path.join("/root", "downloads", random_tag)
         
+        # Проверяем существование директории
         if not os.path.exists(dir_path):
-            raise HTTPException(status_code=404, detail=f"Directory not found for tag: {random_tag}")
-
+            raise HTTPException(status_code=404, 
+                              detail=f"Directory not found: {dir_path}")
+        
+        # Логируем, что директория найдена и её путь
+        logging.info(f"Looking for files in directory: {dir_path}")
+        
+        # Получаем список файлов в директории
         files = [f for f in os.listdir(dir_path) if os.path.isfile(os.path.join(dir_path, f))]
         
+        # Логируем найденные файлы
+        logging.info(f"Files found: {files}")
+        
         if not files:
-            raise HTTPException(status_code=404, detail="No files found in the directory")
-
+            raise HTTPException(status_code=404, 
+                              detail=f"В директории нет файлов. Путь директории: {dir_path}")
+        
+        # Создаем временный буфер для архива
         zip_buffer = BytesIO()
-
+        
+        # Создаем архив и добавляем в него файлы
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
             for file in files:
                 file_path = os.path.join(dir_path, file)
-                zip_file.write(file_path, arcname=file)
-
+                # Проверяем читаемость файла перед добавлением
+                try:
+                    with open(file_path, 'rb') as f:
+                        file_content = f.read()
+                    zip_file.writestr(file, file_content)
+                    logging.info(f"Added file to archive: {file}")
+                except Exception as e:
+                    logging.error(f"Failed to add file {file} to archive: {str(e)}")
+        
+        # Перемещаем указатель буфера в начало
         zip_buffer.seek(0)
-
+        
+        # Создаем имя архива для скачивания
         archive_name = f"files_{user_id}.zip"
-
+        
+        # Возвращаем архив как StreamingResponse
         return StreamingResponse(
             zip_buffer,
             media_type="application/zip",
@@ -169,4 +192,5 @@ async def download_files(user_id: str, redis_db: redis.Redis = Depends(get_redis
     
     except Exception as e:
         logging.error(f"Error during file download: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        raise HTTPException(status_code=500, 
+                          detail=f"Internal server error: {str(e)}. Dir path: {dir_path if 'dir_path' in locals() else 'unknown'}")
