@@ -36,7 +36,7 @@ def create_container(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
         return {
             "status": "exists",
             "container_info": find_container_by_tag(existing_tag),
-            "access_url": f"http://147.45.241.240:8000/access/{user_id}"
+            "access_url": f"http://31.130.150.69:8000/access/{user_id}"
         }
 
     container_info = launch_chrome_container()
@@ -47,7 +47,7 @@ def create_container(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
     return {
         "status": "created",
         "container_info": container_info,
-        "access_url": f"http://147.45.241.240:8000/access/{user_id}"
+        "access_url": f"http://31.130.150.69:8000/access/{user_id}"
     }
 
 
