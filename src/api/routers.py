@@ -3,7 +3,7 @@ import os
 import redis
 import re
 import zipfile
-import io
+from io import BytesIO
 from fastapi import Request, HTTPException, Depends, APIRouter
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -15,6 +15,7 @@ from containers import (
 )
 from fastapi.responses import StreamingResponse
 from src.core.database import get_redis
+import logging
 
 
 router = APIRouter()
@@ -133,44 +134,39 @@ def delete_directory(random_tag: str):
 
 @router.get("/download-files/{user_id}")
 async def download_files(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
-    """
-    Возвращает все файлы из директории контейнера в виде ZIP-архива.
-    """
-    random_tag = redis_db.get(f"user:{user_id}")
-    if not random_tag:
-        raise HTTPException(400, "Тег для пользователя не найден")
-    random_tag = random_tag.decode("utf-8")
-    if not re.match("^[a-zA-Z0-9]{8}$", random_tag):
-        raise HTTPException(400, "Некорректный формат тега")
-
-    dir_path = os.path.join("/root", "downloads", random_tag)
-
-    if not os.path.exists(dir_path):
-        raise HTTPException(404, "Директория не найдена")
-
-    file_count = 0
-    for root, _, files in os.walk(dir_path):
-        file_count += len(files)
-    if file_count == 0:
-        raise HTTPException(404, "В директории нет файлов")
-
-    zip_buffer = io.BytesIO()
     try:
-        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
-            for root, _, files in os.walk(dir_path):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    arcname = os.path.relpath(file_path, dir_path)
-                    zipf.write(file_path, arcname)
-    except Exception as e:
-        raise HTTPException(500, f"Ошибка создания архива: {str(e)}")
+        random_tag = redis_db.get(user_id)
+        
+        if not random_tag:
+            raise HTTPException(status_code=404, detail=f"No files found for user ID: {user_id}")
+        
+        dir_path = os.path.join("/root", "downloads", random_tag)
+        
+        if not os.path.exists(dir_path):
+            raise HTTPException(status_code=404, detail=f"Directory not found for tag: {random_tag}")
 
-    zip_buffer.seek(0)
-    return StreamingResponse(
-        zip_buffer,
-        media_type="application/zip",
-        headers={
-            "Content-Disposition": f"attachment; filename={random_tag}_files.zip",
-            "Content-Length": str(zip_buffer.getbuffer().nbytes)
-        }
-    )
+        files = [f for f in os.listdir(dir_path) if os.path.isfile(os.path.join(dir_path, f))]
+        
+        if not files:
+            raise HTTPException(status_code=404, detail="No files found in the directory")
+
+        zip_buffer = BytesIO()
+
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            for file in files:
+                file_path = os.path.join(dir_path, file)
+                zip_file.write(file_path, arcname=file)
+
+        zip_buffer.seek(0)
+
+        archive_name = f"files_{user_id}.zip"
+
+        return StreamingResponse(
+            zip_buffer,
+            media_type="application/zip",
+            headers={"Content-Disposition": f"attachment; filename={archive_name}"}
+        )
+    
+    except Exception as e:
+        logging.error(f"Error during file download: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
