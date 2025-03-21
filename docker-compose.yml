@@ -16,6 +16,8 @@ services:
       - /baixo/downloads:/baixo/downloads:z
       - /var/run/docker.sock:/var/run/docker.sock:z
     restart: no
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   redis:
     image: redis:alpine
@@ -43,10 +45,12 @@ services:
     restart: no
     stop_grace_period: 30s
     stop_signal: SIGTERM
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 networks:
   app_network:
-    driver: host
+    driver: bridge
 
 volumes:
   redis_data:
