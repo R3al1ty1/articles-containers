@@ -152,7 +152,7 @@ async def download_files(user_id: str, redis_db: redis.Redis = Depends(get_redis
         if not random_tag:
             raise HTTPException(status_code=404, detail=f"No files found for user ID: {user_id}")
 
-        dir_path = os.path.join("/root", "downloads", random_tag)
+        dir_path = os.path.join("/root", "downloads", random_tag.decode() if isinstance(random_tag, bytes) else random_tag)
 
         if not os.path.exists(dir_path):
             raise HTTPException(status_code=404, detail=f"Directory not found for tag: {random_tag}")
@@ -179,6 +179,8 @@ async def download_files(user_id: str, redis_db: redis.Redis = Depends(get_redis
             headers={"Content-Disposition": f"attachment; filename={archive_name}"}
         )
     
+    except HTTPException as he:
+        raise he
     except Exception as e:
         logging.error(f"Error during file download: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
