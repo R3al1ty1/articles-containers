@@ -41,8 +41,7 @@ services:
     depends_on:
       - web
     restart: no
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    stop_grace_period: 10s
 
 networks:
   app_network:
