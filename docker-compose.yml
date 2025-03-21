@@ -15,7 +15,7 @@ services:
       - ./data:/app/data:z
       - /baixo/downloads:/baixo/downloads:z
       - /var/run/docker.sock:/var/run/docker.sock:z
-    restart: unless-stopped
+    restart: no
 
   redis:
     image: redis:alpine
@@ -26,7 +26,7 @@ services:
       - app_network
     ports:
       - "6378:6378"
-    restart: unless-stopped
+    restart: no
 
   nginx:
     image: nginx:alpine
@@ -40,7 +40,7 @@ services:
       - app_network
     depends_on:
       - web
-    restart: unless-stopped
+    restart: no
 
 networks:
   app_network:
