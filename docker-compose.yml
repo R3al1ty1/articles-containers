@@ -30,18 +30,15 @@ services:
 
   nginx:
     image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
+    network_mode: host
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
-    networks:
-      - app_network
     depends_on:
       - web
     restart: no
-    stop_grace_period: 10s
+    stop_signal: SIGTERM
+    init: true
 
 networks:
   app_network:
