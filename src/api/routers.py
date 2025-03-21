@@ -36,7 +36,7 @@ def create_container(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
         return {
             "status": "exists",
             "container_info": find_container_by_tag(existing_tag),
-            "access_url": f"http://31.130.150.69:8000/access/{user_id}"
+            "access_url": f"http://opensci.ru/access/{user_id}"
         }
 
     container_info = launch_chrome_container()
@@ -47,7 +47,7 @@ def create_container(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
     return {
         "status": "created",
         "container_info": container_info,
-        "access_url": f"http://31.130.150.69:8000/access/{user_id}"
+        "access_url": f"http://opensci.ru/access/{user_id}"
     }
 
 
@@ -75,7 +75,7 @@ def access_container(
 
     scheme = request.headers.get("X-Forwarded-Proto", "http")
     host = request.headers.get("X-Forwarded-Host", request.url.hostname)
-    target_url = f"{scheme}://{host.split(':')[0]}:{novnc_port}/vnc.html?autoconnect=true&resize=scale"
+    target_url = f"http://opensci.ru/vnc/{novnc_port}/vnc.html?autoconnect=true&resize=scale"
 
     return RedirectResponse(target_url)
 
