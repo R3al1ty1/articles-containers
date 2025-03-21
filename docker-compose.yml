@@ -5,11 +5,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.api
-    ports:
-      - "8000:8000"
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6378
+    networks:
+      - app_network
     depends_on:
       - redis
     volumes:
@@ -20,11 +20,30 @@ services:
 
   redis:
     image: redis:alpine
-    ports:
-      - "6378:6378"
+    command: redis-server --port 6378
     volumes:
       - redis_data:/data
-    command: redis-server --port 6378
+    networks:
+      - app_network
+    ports:
+      - "6378:6378"
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+    networks:
+      - app_network
+    depends_on:
+      - web
+
+networks:
+  app_network:
+    driver: bridge
 
 volumes:
   redis_data:
