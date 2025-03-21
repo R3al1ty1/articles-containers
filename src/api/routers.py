@@ -131,7 +131,7 @@ def delete_directory(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
     if not container_info:
         raise HTTPException(404, "Контейнер не найден")
 
-    dir_path = os.path.join("/root", "downloads", random_tag)
+    dir_path = os.path.join("/baixo", "downloads", random_tag)
 
     if not dir_path or not os.path.exists(dir_path):
         raise HTTPException(404, "Директория не найдена")
@@ -152,7 +152,7 @@ async def download_files(user_id: str, redis_db: redis.Redis = Depends(get_redis
         if not random_tag:
             raise HTTPException(status_code=404, detail=f"No files found for user ID: {user_id}")
 
-        dir_path = os.path.join("/root", "downloads", random_tag.decode() if isinstance(random_tag, bytes) else random_tag)
+        dir_path = os.path.join("/baixo", "downloads", random_tag.decode() if isinstance(random_tag, bytes) else random_tag)
 
         if not os.path.exists(dir_path):
             raise HTTPException(status_code=404, detail=f"Directory not found for tag: {random_tag}")
