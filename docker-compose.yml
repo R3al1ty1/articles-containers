@@ -30,23 +30,23 @@ services:
       - "6378:6378"
     restart: no
 
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-    networks:
-      - app_network
-    depends_on:
-      - web
-    restart: no
-    stop_grace_period: 30s
-    stop_signal: SIGTERM
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+  # nginx:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/conf.d:/etc/nginx/conf.d:ro
+  #     - ./nginx/ssl:/etc/nginx/ssl:ro
+  #   networks:
+  #     - app_network
+  #   depends_on:
+  #     - web
+  #   restart: no
+  #   stop_grace_period: 30s
+  #   stop_signal: SIGTERM
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
 
 networks:
   app_network:
