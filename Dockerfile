@@ -2,10 +2,7 @@ FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC
 
-RUN apt-get update || apt-get update && apt-get install -y apt-transport-https \
-    curl gnupg x11vnc xvfb x11-utils openbox \
-    supervisor novnc websockify git squid \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y apt-transport-https curl gnupg x11vnc xvfb x11-utils openbox supervisor git squid && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome-keyring.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/google-chrome-keyring.gpg arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
