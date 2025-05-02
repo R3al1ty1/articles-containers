@@ -2,7 +2,7 @@ FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC
 
-RUN apt-get update && apt-get install -y apt-transport-https \
+RUN apt-get update || apt-get update && apt-get install -y apt-transport-https \
     curl gnupg x11vnc xvfb x11-utils openbox \
     supervisor novnc websockify git squid \
     && rm -rf /var/lib/apt/lists/*
