@@ -25,7 +25,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 
-@router.get("/create/{user_id}")
+@router.post("/create/{user_id}")
 def create_container(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
     """Создает контейнер и связывает его с user_id в Redis"""
     if not user_id:
@@ -51,7 +51,7 @@ def create_container(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
     }
 
 
-@router.get("/access/{user_id}")
+@router.post("/access/{user_id}")
 def access_container(
     user_id: str,
     request: Request,
