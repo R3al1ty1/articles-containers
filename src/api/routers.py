@@ -184,3 +184,9 @@ async def download_files(user_id: str, redis_db: redis.Redis = Depends(get_redis
     except Exception as e:
         logging.error(f"Error during file download: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/ping")
+def ping():
+    """Проверяет доступность сервиса."""
+    return {"status": "ok"}
