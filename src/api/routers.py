@@ -51,7 +51,7 @@ def create_container(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
     }
 
 
-@router.post("/access/{user_id}")
+@router.get("/access/{user_id}")
 def access_container(
     user_id: str,
     request: Request,
