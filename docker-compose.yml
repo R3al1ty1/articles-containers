@@ -18,6 +18,7 @@ services:
     restart: no
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    stop_signal: SIGINT
     ports:
       - "8080:8080"
 

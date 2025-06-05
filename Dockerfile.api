@@ -15,4 +15,4 @@ COPY . .
 RUN mkdir -p /app/templates
 COPY templates /app/templates
 
-CMD ["python", "main.py"]
+CMD ["exec", "python", "main.py"]

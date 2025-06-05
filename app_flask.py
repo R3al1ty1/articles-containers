@@ -19,7 +19,7 @@ def create_container():
     container_info = launch_chrome_container()
     tag = container_info["random_tag"]
 
-    container_url = f"http://31.130.150.69:8000/{tag}"
+    container_url = f"https://opensci.ru/{tag}"
     return jsonify({
         "container_info": container_info,
         "access_url": container_url
