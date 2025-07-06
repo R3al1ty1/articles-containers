@@ -13,7 +13,7 @@ services:
     volumes:
       - ./containers:/app/containers:z
       - ./data:/app/data:z
-      - /baixo/downloads:/baixo/downloads:z
+      - /root/Downloads:/root/Downloads:z
       - /var/run/docker.sock:/var/run/docker.sock:z
     restart: no
     extra_hosts:
