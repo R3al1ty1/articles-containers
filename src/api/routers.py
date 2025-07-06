@@ -36,7 +36,7 @@ def create_container(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
         return {
             "status": "exists",
             "container_info": find_container_by_tag(existing_tag),
-            "access_url": f"http://opensci.ru/access/{user_id}"
+            "access_url": f"https://opensci.ru/access/{user_id}"
         }
 
     container_info = launch_chrome_container()
