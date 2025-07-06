@@ -171,7 +171,7 @@ async def download_files(user_id: str, redis_db: redis.Redis = Depends(get_redis
 
         zip_buffer.seek(0)
 
-        archive_name = f"files_{user_id}.zip"
+        archive_name = f"opensci_files_{user_id}.zip"
 
         return StreamingResponse(
             zip_buffer,
