@@ -33,7 +33,9 @@ def launch_chrome_container():
     host_port_novnc = get_free_port()
     host_port_squid = get_free_port()
 
-    image, build_logs = client.images.build(path=".", tag="chrome-vnc")
+    build_context_path = "/app/chrome_builder"
+
+    image, build_logs = client.images.build(path=build_context_path, tag="chrome-vnc")
 
     container = client.containers.run(
         "chrome-vnc",

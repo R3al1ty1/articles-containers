@@ -3,7 +3,7 @@ import os
 from flask import Flask, redirect, request, jsonify
 from werkzeug.serving import run_simple
 
-from containers import (
+from containers.containers import (
     find_all_chrome_containers,
     find_container_by_tag,
     launch_chrome_container
