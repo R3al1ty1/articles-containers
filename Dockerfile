@@ -14,6 +14,8 @@ RUN git clone https://github.com/novnc/noVNC.git && \
     git clone https://github.com/novnc/websockify.git && \
     ln -s /root/noVNC/vnc.html /root/noVNC/index.html
 
+COPY chrome-extension /root/chrome-extension/
+
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY squid.conf /etc/squid/squid.conf
 
