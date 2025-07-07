@@ -108,13 +108,13 @@ def list_containers():
     return find_all_chrome_containers()
 
 
-@router.get("/", response_class=HTMLResponse)
-def index(request: Request):
-    """Главная страница со списком контейнеров."""
-    return templates.TemplateResponse(
-        "index.html",
-        {"request": request, "containers": find_all_chrome_containers()}
-    )
+# @router.get("/", response_class=HTMLResponse)
+# def index(request: Request):
+#     """Главная страница со списком контейнеров."""
+#     return templates.TemplateResponse(
+#         "index.html",
+#         {"request": request, "containers": find_all_chrome_containers()}
+#     )
 
 
 @router.delete("/delete-directory/{user_id}")
