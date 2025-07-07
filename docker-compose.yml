@@ -14,6 +14,7 @@ services:
       - ./containers:/app/containers:z
       - ./data:/app/data:z
       - /root/Downloads:/root/Downloads:z
+      - /root/chrome-extensions:/root/chrome-extensions:z
       - /var/run/docker.sock:/var/run/docker.sock:z
     restart: no
     extra_hosts:
