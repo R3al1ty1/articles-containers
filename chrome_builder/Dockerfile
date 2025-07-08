@@ -15,6 +15,7 @@ RUN git clone https://github.com/novnc/noVNC.git && \
     ln -s /root/noVNC/vnc.html /root/noVNC/index.html
 
 COPY chrome-extension /root/chrome-extension/
+RUN chown -R root:root /root/chrome-extension/ && ls -lR /root/chrome-extension
 
 COPY start-chrome.sh /usr/local/bin/start-chrome.sh
 RUN chmod +x /usr/local/bin/start-chrome.sh

@@ -1,13 +1,15 @@
 #!/bin/bash
 
-# Устанавливаем английскую раскладку.
-# Теперь это можно делать здесь, т.к. Xvfb уже будет запущен командой xvfb-run.
+if [ -d "/root/chrome-profile" ]; then
+    echo "Wiping old Chrome profile..."
+    rm -rf /root/chrome-profile
+fi
+
 setxkbmap -layout us -display :99
 
-# Запускаем Chrome.
-# Ключевой момент: `exec` заменяет процесс этого скрипта процессом Chrome.
-# Это позволяет supervisor'у правильно отслеживать PID Chrome.
 exec google-chrome \
+  --enable-logging=stderr \
+  --v=1 \
   --no-sandbox \
   --disable-dev-shm-usage \
   --remote-debugging-port=9222 \
