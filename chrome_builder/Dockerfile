@@ -15,7 +15,7 @@ RUN git clone https://github.com/novnc/noVNC.git && \
     ln -s /root/noVNC/vnc.html /root/noVNC/index.html
 
 COPY chrome-extension /root/chrome-extension/
-
+RUN ls -lR /root/chrome-extension/
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY squid.conf /etc/squid/squid.conf
 
