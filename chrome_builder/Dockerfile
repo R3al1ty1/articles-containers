@@ -2,7 +2,10 @@ FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    software-properties-common \
+    && add-apt-repository ppa:saiarcot895/chromium-beta \
+    && apt-get update && apt-get install -y --no-install-recommends \
     apt-transport-https \
     curl \
     gnupg \
@@ -15,7 +18,6 @@ RUN apt-get update && apt-get install -y \
     squid \
     chromium-browser \
     && rm -rf /var/lib/apt/lists/*
-
 
 WORKDIR /root
 
