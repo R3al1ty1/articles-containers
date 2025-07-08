@@ -1,20 +1,23 @@
 #!/bin/bash
 
-if [ -d "/root/chrome-profile" ]; then
-    echo "Wiping old Chrome profile..."
-    rm -rf /root/chrome-profile
+# Очистка старого профиля (оставляем, это хорошая практика)
+if [ -d "/root/chromium-profile" ]; then
+    echo "Wiping old Chromium profile..."
+    rm -rf /root/chromium-profile
 fi
 
+# Установка раскладки
 setxkbmap -layout us -display :99
 
-exec google-chrome \
+# Запускаем Chromium.
+exec chromium-browser \
   --enable-logging=stderr \
   --v=1 \
   --no-sandbox \
   --disable-dev-shm-usage \
   --remote-debugging-port=9222 \
   --load-extension=/root/chrome-extension \
-  --user-data-dir=/root/chrome-profile \
+  --user-data-dir=/root/chromium-profile \
   --display=:99 \
   --window-size=1280,720 \
   --no-first-run \
