@@ -24,6 +24,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
+# Константа для максимального числа одновременных контейнеров
+MAX_CONCURRENT_USERS = 5
+
 
 @router.post("/create/{user_id}")
 def create_container(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
@@ -38,6 +41,13 @@ def create_container(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
             "container_info": find_container_by_tag(existing_tag),
             "access_url": f"https://opensci.ru/access/{user_id}"
         }
+
+    current_containers = find_all_chrome_containers()
+    if len(current_containers) >= MAX_CONCURRENT_USERS:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Сервис перегружен. Пожалуйста, попробуйте через 15 минут."
+        )
 
     container_info = launch_chrome_container()
     tag = container_info["random_tag"]
@@ -93,12 +103,16 @@ def delete_container(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
 
         container_info = find_container_by_tag(tag)
         if not container_info:
-            return {"status": "not_found", "message": "Контейнер не найден"}
+            redis_db.delete(f"user:{user_id}") # Удаляем запись из Redis, если контейнера уже нет
+            return {"status": "not_found", "message": "Контейнер не найден, запись в Redis удалена"}
 
         stop_container(container_info)
         redis_db.delete(f"user:{user_id}")
+        
+        return {"status": "success", "message": f"Контейнер для {user_id} удален."}
 
     except Exception as e:
+        logger.error(f"Ошибка при удалении контейнера для {user_id}: {str(e)}")
         raise HTTPException(500, f"Ошибка при удалении контейнера: {str(e)}")
 
 
@@ -106,15 +120,6 @@ def delete_container(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
 def list_containers():
     """Возвращает список всех запущенных контейнеров."""
     return find_all_chrome_containers()
-
-
-# @router.get("/", response_class=HTMLResponse)
-# def index(request: Request):
-#     """Главная страница со списком контейнеров."""
-#     return templates.TemplateResponse(
-#         "index.html",
-#         {"request": request, "containers": find_all_chrome_containers()}
-#     )
 
 
 @router.delete("/delete-directory/{user_id}")
@@ -126,20 +131,20 @@ def delete_directory(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
     random_tag = redis_db.get(f"user:{user_id}")
     if not random_tag:
         return {"status": "not_found", "message": "Контейнер не найден"}
+    
+    # random_tag из Redis - это bytes, нужно декодировать
+    random_tag_str = random_tag.decode('utf-8')
 
-    container_info = find_container_by_tag(random_tag)
-    if not container_info:
-        raise HTTPException(404, "Контейнер не найден")
+    dir_path = os.path.join("/root", "Downloads", random_tag_str)
 
-    dir_path = os.path.join("/root", "Downloads", random_tag)
-
-    if not dir_path or not os.path.exists(dir_path):
+    if not os.path.exists(dir_path):
         raise HTTPException(404, "Директория не найдена")
 
     try:
         shutil.rmtree(dir_path)
         return {"status": "success", "message": "Директория удалена"}
     except Exception as e:
+        logger.error(f"Ошибка удаления директории {dir_path}: {e}")
         raise HTTPException(500, f"Ошибка удаления: {str(e)}")
 
 
@@ -147,14 +152,15 @@ def delete_directory(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
 async def download_files(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
     """Возвращает архив файлов пользователя."""
     try:
-        random_tag = redis_db.get(f"user:{user_id}")
+        random_tag_bytes = redis_db.get(f"user:{user_id}")
         
-        if not random_tag:
+        if not random_tag_bytes:
             raise HTTPException(status_code=404, detail=f"No files found for user ID: {user_id}")
 
-        dir_path = os.path.join("/root", "Downloads", random_tag.decode() if isinstance(random_tag, bytes) else random_tag)
+        random_tag = random_tag_bytes.decode('utf-8')
+        dir_path = os.path.join("/root", "Downloads", random_tag)
 
-        if not os.path.exists(dir_path):
+        if not os.path.isdir(dir_path):
             raise HTTPException(status_code=404, detail=f"Directory not found for tag: {random_tag}")
 
         files = [f for f in os.listdir(dir_path) if os.path.isfile(os.path.join(dir_path, f))]
@@ -182,7 +188,7 @@ async def download_files(user_id: str, redis_db: redis.Redis = Depends(get_redis
     except HTTPException as he:
         raise he
     except Exception as e:
-        logging.error(f"Error during file download: {str(e)}")
+        logging.error(f"Error during file download for user {user_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
