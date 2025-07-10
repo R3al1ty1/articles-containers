@@ -157,7 +157,11 @@ async def download_files(user_id: str, redis_db: redis.Redis = Depends(get_redis
         if not random_tag_bytes:
             raise HTTPException(status_code=404, detail=f"No files found for user ID: {user_id}")
 
-        random_tag = random_tag_bytes.decode('utf-8')
+        try:
+            random_tag = random_tag_bytes.decode('utf-8')
+        except:
+            random_tag = random_tag_bytes
+
         dir_path = os.path.join("/root", "Downloads", random_tag)
 
         if not os.path.isdir(dir_path):
