@@ -12,6 +12,7 @@ exec chromium-browser \
   --enable-logging=stderr --v=1 --no-sandbox \
   --disable-dev-shm-usage --remote-debugging-port=9222 \
   $EXTENSION_FLAG \
+  --disable-features=DnsOverHttpsUpgrade \
   --user-data-dir=/root/chromium-profile --display=:99 \
   --window-size=1280,720 --no-first-run \
   --no-default-browser-check \
