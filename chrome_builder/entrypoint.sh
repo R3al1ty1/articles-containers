@@ -11,7 +11,7 @@ echo "Настройка контейнера для: $WEBSITE_TARGET"
 case "$WEBSITE_TARGET" in
   "scopus")
     export START_URL="https://www.scopus.com"
-    export EXTENSION_FLAG="--load-extension=/root/chrome-extension"
+    export EXTENSION_FLAG="--load-extension=/root/scopus_extension"
     export PROXY_FLAG="--proxy-server=http://127.0.0.1:3128"
     cat <<EOF > /etc/squid/squid.conf
 acl SSL_ports port 443
@@ -29,7 +29,7 @@ EOF
     ;;
   "wos")
     export START_URL="https://www.webofscience.com"
-    export EXTENSION_FLAG=""
+    export EXTENSION_FLAG="--load-extension=/root/wos_extension"
     export PROXY_FLAG="--no-proxy-server"
     cat <<EOF > /etc/squid/squid.conf
 http_port 3128

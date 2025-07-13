@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Web of Science UI Cleaner",
+  "version": "1.0",
+  "description": "Removes the institutional logo banner from the Web of Science website.",
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.webofscience.com/*"
+      ],
+      "js": [
+        "wos_content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "host_permissions": [
+    "https://*.webofscience.com/*"
+  ]
+}

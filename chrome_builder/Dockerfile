@@ -25,8 +25,9 @@ RUN git clone https://github.com/novnc/noVNC.git && \
     git clone https://github.com/novnc/websockify.git && \
     ln -s /root/noVNC/vnc.html /root/noVNC/index.html
 
-COPY chrome-extension /root/chrome-extension/
-RUN chown -R root:root /root/chrome-extension/
+COPY scopus_extension /root/scopus_extension/
+COPY wos_extension /root/wos_extension/
+RUN chown -R root:root /root/scopus_extension/ /root/wos_extension/
 
 COPY start-chromium.sh /usr/local/bin/start-chromium.sh
 RUN chmod +x /usr/local/bin/start-chromium.sh
