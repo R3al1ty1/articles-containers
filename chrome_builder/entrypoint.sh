@@ -30,10 +30,9 @@ EOF
   "wos")
     export START_URL="https://www.webofscience.com"
     export EXTENSION_FLAG=""
-    export PROXY_FLAG=""
+    export PROXY_FLAG="--no-proxy-server"
     cat <<EOF > /etc/squid/squid.conf
 http_port 3128
-# Разрешаем все, т.к. прокси все равно не используется браузером
 http_access allow all
 EOF
     ;;
@@ -44,7 +43,7 @@ EOF
 esac
 
 echo "Стартовый URL: $START_URL"
-echo "Флаг расширения: $EXTENSION_FLAG"
+echo "Флаг расширения: '$EXTENSION_FLAG'"
 echo "Флаг прокси: '$PROXY_FLAG'"
 
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

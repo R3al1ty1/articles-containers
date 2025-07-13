@@ -36,8 +36,6 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# COPY squid.conf /etc/squid/squid.conf
-
 EXPOSE 6080 9222 3128
 
 CMD ["/usr/local/bin/entrypoint.sh"]
