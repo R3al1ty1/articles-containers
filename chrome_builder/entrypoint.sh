@@ -12,16 +12,22 @@ case "$WEBSITE_TARGET" in
   "scopus")
     export START_URL="https://www.scopus.com"
     EXTENSION_PATH="/root/scopus_extension"
+    # Для Scopus используем прокси, чтобы ограничить доступ
     export PROXY_FLAG="--proxy-server=http://127.0.0.1:3128"
     cat <<EOF > /etc/squid/squid.conf
+# --- SQUID CONFIG FOR SCOPUS ---
 acl SSL_ports port 443
 acl CONNECT method CONNECT
+# Основные домены для работы Scopus и Elsevier
 acl allowed_domains dstdomain .scopus.com
 acl allowed_domains dstdomain .elsevier.com
+# CDN и другие сервисы
 acl allowed_domains dstdomain .cloudflare.com
+
 http_access deny CONNECT !SSL_ports
 http_access allow allowed_domains
 http_access deny all
+
 http_port 3128
 coredump_dir /var/spool/squid
 refresh_pattern . 0 20% 4320
@@ -30,10 +36,26 @@ EOF
   "wos")
     export START_URL="https://www.webofscience.com"
     EXTENSION_PATH="/root/wos_extension"
-    export PROXY_FLAG="--no-proxy-server"
+    # Для WoS тоже используем прокси для ограничения доступа
+    export PROXY_FLAG="--proxy-server=http://127.0.0.1:3128"
     cat <<EOF > /etc/squid/squid.conf
+acl SSL_ports port 443
+acl CONNECT method CONNECT
+
+acl allowed_domains dstdomain .webofscience.com
+acl allowed_domains dstdomain .clarivate.com
+acl allowed_domains dstdomain .cookielaw.org
+acl allowed_domains dstdomain .newrelic.com
+acl allowed_domains dstdomain .nr-data.net
+acl allowed_domains dstdomain .googletagmanager.com
+
+http_access deny CONNECT !SSL_ports
+http_access allow allowed_domains
+http_access deny all
+
 http_port 3128
-http_access allow all
+coredump_dir /var/spool/squid
+refresh_pattern . 0 20% 4320
 EOF
     ;;
   *)
@@ -49,7 +71,6 @@ else
     echo "ПРЕДУПРЕЖДЕНИЕ: Расширение не найдено по пути: $EXTENSION_PATH. Запускаем без расширения."
     export EXTENSION_FLAG=""
 fi
-
 
 echo "Стартовый URL: $START_URL"
 echo "Флаг расширения: '$EXTENSION_FLAG'"
