@@ -1,5 +1,6 @@
 import shutil
 import os
+from pydantic import BaseModel
 import redis
 import re
 import zipfile
@@ -27,18 +28,23 @@ templates = Jinja2Templates(directory="templates")
 # Константа для максимального числа одновременных контейнеров
 MAX_CONCURRENT_USERS = 5
 
+class CreateContainerRequest(BaseModel):
+    user_id: str
+    website: str = "scopus"
 
-@router.post("/create/{user_id}")
-def create_container(user_id: str, website: str, redis_db: redis.Redis = Depends(get_redis)):
+
+@router.post("/create")
+def create_container(request: CreateContainerRequest, redis_db: redis.Redis = Depends(get_redis)):
     """Создает контейнер и связывает его с user_id в Redis"""
-    if not user_id:
-        raise HTTPException(400, "Требуется user_id")
+    user_id = request.user_id
+    website = request.website
 
     existing_tag = redis_db.get(f"user:{user_id}")
     if existing_tag:
+        container_info = find_container_by_tag(existing_tag)
         return {
             "status": "exists",
-            "container_info": find_container_by_tag(existing_tag),
+            "container_info": container_info,
             "access_url": f"https://opensci.ru/access/{user_id}"
         }
 
