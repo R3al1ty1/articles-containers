@@ -26,7 +26,7 @@ refresh_pattern . 0 20% 4320
 EOF
     ;;
   "wos")
-    export START_URL="https://www.webofscience.com"
+    export START_URL="https://www.webofscience.com/wos/basic-search"
     cat <<EOF > /etc/squid/squid.conf
 # Разрешаем доступ к Web of Science и его зависимостям
 acl allowed dstdomain .webofscience.com
