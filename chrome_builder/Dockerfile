@@ -31,9 +31,13 @@ RUN chown -R root:root /root/chrome-extension/
 COPY start-chromium.sh /usr/local/bin/start-chromium.sh
 RUN chmod +x /usr/local/bin/start-chromium.sh
 
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY squid.conf /etc/squid/squid.conf
 
-EXPOSE 6080 9222
+# COPY squid.conf /etc/squid/squid.conf
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+EXPOSE 6080 9222 3128
+
+CMD ["/usr/local/bin/entrypoint.sh"]

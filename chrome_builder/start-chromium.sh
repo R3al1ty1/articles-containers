@@ -1,15 +1,17 @@
 #!/bin/bash
 
-# Очистка старого профиля (оставляем, это хорошая практика)
+if [ -z "$START_URL" ]; then
+    echo "Критическая ошибка: стартовый URL (START_URL) не установлен."
+    START_URL="https://www.google.com" 
+fi
+
 if [ -d "/root/chromium-profile" ]; then
     echo "Wiping old Chromium profile..."
     rm -rf /root/chromium-profile
 fi
 
-# Установка раскладки
 setxkbmap -layout us -display :99
 
-# Запускаем Chromium.
 exec chromium-browser \
   --enable-logging=stderr \
   --v=1 \
@@ -23,4 +25,4 @@ exec chromium-browser \
   --no-first-run \
   --no-default-browser-check \
   --proxy-server="http://127.0.0.1:3128" \
-  https://www.scopus.com
+  "$START_URL"

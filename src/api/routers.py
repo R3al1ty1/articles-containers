@@ -29,7 +29,7 @@ MAX_CONCURRENT_USERS = 5
 
 
 @router.post("/create/{user_id}")
-def create_container(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
+def create_container(user_id: str, website: str, redis_db: redis.Redis = Depends(get_redis)):
     """Создает контейнер и связывает его с user_id в Redis"""
     if not user_id:
         raise HTTPException(400, "Требуется user_id")
@@ -49,7 +49,7 @@ def create_container(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
             detail=f"Сервис перегружен. Пожалуйста, попробуйте через 15 минут."
         )
 
-    container_info = launch_chrome_container()
+    container_info = launch_chrome_container(website=website)
     tag = container_info["random_tag"]
 
     redis_db.setex(f"user:{user_id}", 86400, tag)

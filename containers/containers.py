@@ -17,15 +17,32 @@ def get_free_port():
         return s.getsockname()[1]
 
 
-def launch_chrome_container():
-    """Запускает контейнер с Chrome и возвращает его tag и порты."""
+def launch_chrome_container(website: str):
+    """
+    Запускает контейнер с Chrome и возвращает его tag и порты.
+    Поддерживаемые значения для website: 'scopus', 'wos'.
+    """
+    if website not in ['scopus', 'wos']:
+        raise ValueError("Неподдерживаемый сайт. Используйте 'scopus' или 'wos'.")
+
+    image_tag = "chrome-vnc-custom"
+
+    try:
+        client.images.get(image_tag)
+    except docker.errors.ImageNotFound:
+        print(f"Образ {image_tag} не найден. Собираем...")
+        build_context_path = "/app/chrome_builder"
+        client.images.build(path=build_context_path, tag=image_tag)
+        print("Сборка завершена.")
+
+
     random_tag = ''.join(
         random.choices(
             string.ascii_lowercase + string.digits, k=8
         )
     )
 
-    container_name = f"chrome_container_{random_tag}"
+    container_name = f"chrome_container_{website}_{random_tag}"
     downloads_dir = os.path.join("/root", "Downloads", random_tag)
 
     os.makedirs(downloads_dir, exist_ok=True)
@@ -33,19 +50,16 @@ def launch_chrome_container():
     host_port_novnc = get_free_port()
     host_port_squid = get_free_port()
 
-    build_context_path = "/app/chrome_builder"
-
-    image, build_logs = client.images.build(path=build_context_path, tag="chrome-vnc")
-
     container = client.containers.run(
-        "chrome-vnc",
+        image_tag,
         name=container_name,
         ports={
             '6080/tcp': host_port_novnc,
             '3128/tcp': host_port_squid,
         },
         environment={
-            'DISPLAY': ':99'
+            'DISPLAY': ':99',
+            'WEBSITE_TARGET': website
         },
         volumes={
             os.path.abspath(downloads_dir): {
@@ -60,6 +74,7 @@ def launch_chrome_container():
         "container_id": container.id,
         "container_name": container_name,
         "random_tag": random_tag,
+        "website": website,
         "host_ports": {
             "noVNC": host_port_novnc,
             "squid": host_port_squid
@@ -70,7 +85,7 @@ def launch_chrome_container():
 
 def extract_tag_from_name(name):
     """Извлекает tag из имени контейнера."""
-    match = re.search(r'chrome_container_([a-z0-9]+)$', name)
+    match = re.search(r'chrome_container_.+?_([a-z0-9]{8})$', name)
     if match:
         return match.group(1)
     return None
