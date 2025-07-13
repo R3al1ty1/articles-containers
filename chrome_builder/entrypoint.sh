@@ -11,15 +11,22 @@ echo "Настройка контейнера для: $WEBSITE_TARGET"
 case "$WEBSITE_TARGET" in
   "scopus")
     export START_URL="https://www.scopus.com"
-    # Для Scopus включаем расширение
     export EXTENSION_FLAG="--load-extension=/root/chrome-extension"
     cat <<EOF > /etc/squid/squid.conf
-# Разрешаем доступ к Scopus
-acl allowed dstdomain .scopus.com
-acl allowed dstdomain .elsevier.com
-acl allowed dstdomain .cloudflare.com
-http_access allow allowed
+acl SSL_ports port 443
+acl CONNECT method CONNECT
+
+acl allowed_domains dstdomain .scopus.com
+acl allowed_domains dstdomain .elsevier.com
+acl allowed_domains dstdomain .cloudflare.com
+
+# 1. Запрещаем туннели (CONNECT) на все порты, кроме 443 (стандартный для HTTPS)
+http_access deny CONNECT !SSL_ports
+# 2. Разрешаем доступ (HTTP и HTTPS) к нашим доменам
+http_access allow allowed_domains
+# 3. Запрещаем всё остальное
 http_access deny all
+
 http_port 3128
 coredump_dir /var/spool/squid
 refresh_pattern . 0 20% 4320
@@ -27,19 +34,25 @@ EOF
     ;;
   "wos")
     export START_URL="https://www.webofscience.com"
-    # Для WoS расширение не нужно
     export EXTENSION_FLAG=""
     cat <<EOF > /etc/squid/squid.conf
-# --- ИСПРАВЛЕННЫЕ ПРАВИЛА SQUID ДЛЯ WOS ---
-# Разрешаем доступ к Web of Science и всем его зависимостям
-acl allowed dstdomain .webofscience.com
-acl allowed dstdomain .clarivate.com
-acl allowed dstdomain .webofknowledge.com 
-acl allowed dstdomain .isiknowledge.com
-acl allowed dstdomain .fastly.net # Многие сайты используют этот CDN
-acl allowed dstdomain .cloudflare.com
-http_access allow allowed
+acl SSL_ports port 443
+acl CONNECT method CONNECT
+
+acl allowed_domains dstdomain .webofscience.com
+acl allowed_domains dstdomain .clarivate.com
+acl allowed_domains dstdomain .webofknowledge.com 
+acl allowed_domains dstdomain .isiknowledge.com
+acl allowed_domains dstdomain .fastly.net
+acl allowed_domains dstdomain .cloudflare.com
+
+# 1. Запрещаем туннели (CONNECT) на все порты, кроме 443 (стандартный для HTTPS)
+http_access deny CONNECT !SSL_ports
+# 2. Разрешаем доступ (HTTP и HTTPS) к нашим доменам
+http_access allow allowed_domains
+# 3. Запрещаем всё остальное
 http_access deny all
+
 http_port 3128
 coredump_dir /var/spool/squid
 refresh_pattern . 0 20% 4320
