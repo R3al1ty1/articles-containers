@@ -30,6 +30,7 @@ EOF
     cat <<EOF > /etc/squid/squid.conf
 # Разрешаем доступ к Web of Science и его зависимостям
 acl allowed dstdomain .webofscience.com
+acl allowed dstdomain .webofknowledge.com
 acl allowed dstdomain .clarivate.com
 acl allowed dstdomain .cloudflare.com
 http_access allow allowed

@@ -166,6 +166,6 @@ def find_all_chrome_containers():
 
 
 if __name__ == "__main__":
-    container_info = launch_chrome_container()
+    container_info = launch_chrome_container(website="wos")
     print("Контейнер запущен:")
     print(container_info)
