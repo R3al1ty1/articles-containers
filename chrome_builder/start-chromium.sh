@@ -5,7 +5,7 @@ fi
 if [ -d "/root/chromium-profile" ]; then
     rm -rf /root/chromium-profile
 fi
-setxkbmap -layout us -display :99
+setxkbmap -option '' -layout us -display :99
 
 exec chromium-browser \
   --no-sandbox \
