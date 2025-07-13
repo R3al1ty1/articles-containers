@@ -44,10 +44,6 @@ acl CONNECT method CONNECT
 
 acl allowed_domains dstdomain .webofscience.com
 acl allowed_domains dstdomain .clarivate.com
-acl allowed_domains dstdomain .cookielaw.org
-acl allowed_domains dstdomain .newrelic.com
-acl allowed_domains dstdomain .nr-data.net
-acl allowed_domains dstdomain .googletagmanager.com
 
 http_access deny CONNECT !SSL_ports
 http_access allow allowed_domains

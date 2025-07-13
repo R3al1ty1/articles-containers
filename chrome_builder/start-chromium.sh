@@ -16,4 +16,8 @@ exec chromium-browser \
   --disable-sync \
   --disable-background-networking \
   --homepage "$START_URL" \
+  \
+  --disable-quic \
+  --proxy-bypass-list="<--localhost-->" \
+  \
   "$START_URL"
