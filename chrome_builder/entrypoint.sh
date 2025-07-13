@@ -12,51 +12,10 @@ case "$WEBSITE_TARGET" in
   "scopus")
     export START_URL="https://www.scopus.com"
     export EXTENSION_FLAG="--load-extension=/root/chrome-extension"
-    cat <<EOF > /etc/squid/squid.conf
-acl SSL_ports port 443
-acl CONNECT method CONNECT
-
-acl allowed_domains dstdomain .scopus.com
-acl allowed_domains dstdomain .elsevier.com
-acl allowed_domains dstdomain .cloudflare.com
-
-# 1. Запрещаем туннели (CONNECT) на все порты, кроме 443 (стандартный для HTTPS)
-http_access deny CONNECT !SSL_ports
-# 2. Разрешаем доступ (HTTP и HTTPS) к нашим доменам
-http_access allow allowed_domains
-# 3. Запрещаем всё остальное
-http_access deny all
-
-http_port 3128
-coredump_dir /var/spool/squid
-refresh_pattern . 0 20% 4320
-EOF
     ;;
   "wos")
     export START_URL="https://www.webofscience.com"
     export EXTENSION_FLAG=""
-    cat <<EOF > /etc/squid/squid.conf
-acl SSL_ports port 443
-acl CONNECT method CONNECT
-
-acl allowed_domains dstdomain .webofscience.com
-acl allowed_domains dstdomain .clarivate.com
-acl allowed_domains dstdomain .webofknowledge.com 
-acl allowed_domains dstdomain .isiknowledge.com
-acl allowed_domains dstdomain .fastly.net
-acl allowed_domains dstdomain .cloudflare.com
-
-# 1. Запрещаем туннели (CONNECT) на все порты, кроме 443 (стандартный для HTTPS)
-http_access deny CONNECT !SSL_ports
-# 2. Разрешаем доступ (HTTP и HTTPS) к нашим доменам
-http_access allow allowed_domains
-# 3. Запрещаем всё остальное
-http_access deny all
-
-http_port 3128
-coredump_dir /var/spool/squid
-refresh_pattern . 0 20% 4320
-EOF
     ;;
   *)
     echo "Ошибка: Неизвестное значение для WEBSITE_TARGET: $WEBSITE_TARGET"
@@ -64,7 +23,20 @@ EOF
     ;;
 esac
 
-echo "Файл /etc/squid/squid.conf сгенерирован."
+# --- ГЛАВНОЕ ИЗМЕНЕНИЕ: РАЗРЕШАЕМ ВСЁ ---
+cat <<EOF > /etc/squid/squid.conf
+# Тестовая конфигурация. Разрешаем абсолютно все HTTPS туннели и HTTP запросы.
+acl SSL_ports port 443
+acl CONNECT method CONNECT
+http_access allow CONNECT
+http_access allow all
+
+http_port 3128
+coredump_dir /var/spool/squid
+refresh_pattern . 0 20% 4320
+EOF
+
+echo "Файл /etc/squid/squid.conf сгенерирован (РЕЖИМ ПОЛНОГО ДОСТУПА)."
 echo "Стартовый URL: $START_URL"
 echo "Флаг расширения: $EXTENSION_FLAG"
 

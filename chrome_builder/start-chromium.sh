@@ -9,12 +9,14 @@ fi
 setxkbmap -layout us -display :99
 
 exec chromium-browser \
-  --enable-logging=stderr --v=1 --no-sandbox \
-  --disable-dev-shm-usage --remote-debugging-port=9222 \
-  $EXTENSION_FLAG \
-  --disable-features=DnsOverHttpsUpgrade \
-  --user-data-dir=/root/chromium-profile --display=:99 \
-  --window-size=1280,720 --no-first-run \
-  --no-default-browser-check \
+  --no-sandbox \
+  --disable-dev-shm-usage \
+  --user-data-dir=/root/chromium-profile \
   --proxy-server="http://127.0.0.1:3128" \
+  --disable-sync \
+  --disable-background-networking \
+  --disable-component-update \
+  --disable-features=DnsOverHttpsUpgrade \
+  --no-startup-window \
+  --homepage "$START_URL" \
   "$START_URL"
