@@ -19,9 +19,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     chromium-browser \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /etc/chromium/policies/managed
+RUN mkdir -p /etc/chromium/policies/managed /etc/chromium-browser/policies/managed
 
-COPY policy.json /etc/chromium/policies/managed/policy.json
+COPY policy.json /etc/chromium/policies/managed/
+COPY policy.json /etc/chromium-browser/policies/managed/
 
 WORKDIR /root
 
