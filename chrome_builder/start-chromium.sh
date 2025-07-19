@@ -19,5 +19,3 @@ exec chromium-browser \
   \
   --disable-quic \
   --proxy-bypass-list="<--localhost-->" \
-  \
-  "$START_URL"
