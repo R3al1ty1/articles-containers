@@ -8,6 +8,7 @@ fi
 setxkbmap -option '' -layout us -display :99
 
 exec chromium-browser \
+  --disable-features=DevTools \
   --no-sandbox \
   --disable-dev-shm-usage \
   --user-data-dir=/root/chromium-profile \
