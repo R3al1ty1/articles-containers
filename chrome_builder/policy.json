@@ -1,4 +1,14 @@
 {
   "DeveloperToolsAvailability": 1,
-  "ExtensionsToolbarMenuEnabled": false
+  "ExtensionsToolbarMenuEnabled": false,
+  "URLBlocklist": [
+    "chrome://settings",
+    "chrome://extensions",
+    "chrome://policy",
+    "chrome://flags",
+    "chrome://about",
+    "chrome://history",
+    "chrome://downloads",
+    "chrome://bookmarks"
+  ]
 }
