@@ -26,7 +26,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 # Константа для максимального числа одновременных контейнеров
-MAX_CONCURRENT_USERS = 5
+MAX_CONCURRENT_USERS = 3
 
 class CreateContainerRequest(BaseModel):
     user_id: str
