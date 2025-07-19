@@ -3,6 +3,7 @@
   "ExtensionsToolbarMenuEnabled": 1,
   "URLBlocklist": [
     "chrome://settings",
+    "chrome://extensions",
     "chrome://policy",
     "chrome://flags",
     "chrome://about",

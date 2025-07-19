@@ -24,9 +24,6 @@ RUN mkdir -p /etc/chromium/policies/managed /etc/chromium-browser/policies/manag
 COPY policy.json /etc/chromium/policies/managed/
 COPY policy.json /etc/chromium-browser/policies/managed/
 
-RUN mkdir -p /root/.config/openbox
-COPY rc.xml /root/.config/openbox/rc.xml
-
 WORKDIR /root
 
 RUN git clone https://github.com/novnc/noVNC.git && \
