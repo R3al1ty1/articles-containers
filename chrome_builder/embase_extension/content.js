@@ -1,6 +1,6 @@
 const SELECTORS_TO_REMOVE = [
-    '#__next > div > header > div.GlobalHeader_headerContainer__qx_an',
-    '#institution-button' 
+    '#header-mobile-panel > div.els-mobile-panel__content > div > div.els-header-institution-info',
+    '#popover-8' 
 ];
 
 function removeElements() {
