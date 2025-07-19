@@ -32,7 +32,8 @@ RUN git clone https://github.com/novnc/noVNC.git && \
 
 COPY scopus_extension /root/scopus_extension/
 COPY wos_extension /root/wos_extension/
-RUN chown -R root:root /root/scopus_extension/ /root/wos_extension/
+COPY embase_extension /root/embase_extension/
+RUN chown -R root:root /root/scopus_extension/ /root/wos_extension/ /root/embase_extension/
 
 COPY start-chromium.sh /usr/local/bin/start-chromium.sh
 RUN chmod +x /usr/local/bin/start-chromium.sh
