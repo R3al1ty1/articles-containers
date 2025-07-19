@@ -137,9 +137,10 @@ def delete_directory(user_id: str, redis_db: redis.Redis = Depends(get_redis)):
     random_tag = redis_db.get(f"user:{user_id}")
     if not random_tag:
         return {"status": "not_found", "message": "Контейнер не найден"}
-    
-    # random_tag из Redis - это bytes, нужно декодировать
-    random_tag_str = random_tag.decode('utf-8')
+    try:
+        random_tag_str = random_tag.decode('utf-8')
+    except:
+        random_tag_str = random_tag
 
     dir_path = os.path.join("/root", "Downloads", random_tag_str)
 
