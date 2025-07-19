@@ -52,6 +52,27 @@ coredump_dir /var/spool/squid
 refresh_pattern . 0 20% 4320
 EOF
     ;;
+  "embase")
+    export START_URL="https://www.embase.com"
+    EXTENSION_PATH="/root/embase_extension"
+    export PROXY_FLAG="--proxy-server=http://127.0.0.1:3128"
+cat <<EOF > /etc/squid/squid.conf
+acl SSL_ports port 443
+acl CONNECT method CONNECT
+acl allowed_domains dstdomain .embase.com
+acl allowed_domains dstdomain .elsevier.com
+acl allowed_domains dstdomain .sciencedirect.com
+acl allowed_domains dstdomain .cloudflare.com
+acl allowed_domains dstdomain .doi.org
+acl allowed_domains dstdomain .hcaptcha.com
+http_access deny CONNECT !SSL_ports
+http_access allow allowed_domains
+http_access deny all
+http_port 3128
+coredump_dir /var/spool/squid
+refresh_pattern . 0 20% 4320
+EOF
+    ;;
   *)
     echo "Ошибка: Неизвестное значение для WEBSITE_TARGET: $WEBSITE_TARGET"
     exit 1

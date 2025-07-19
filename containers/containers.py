@@ -22,8 +22,8 @@ def launch_chrome_container(website: str):
     Запускает контейнер с Chrome и возвращает его tag и порты.
     Поддерживаемые значения для website: 'scopus', 'wos'.
     """
-    if website not in ['scopus', 'wos']:
-        raise ValueError("Неподдерживаемый сайт. Используйте 'scopus' или 'wos'.")
+    if website not in ['scopus', 'wos', 'embase']:
+        raise ValueError("Неподдерживаемый сайт. Используйте 'scopus', 'wos' или 'embase'.")
 
     image_tag = "chrome-vnc-custom"
 
