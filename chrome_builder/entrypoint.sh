@@ -42,6 +42,8 @@ acl allowed_domains dstdomain .clarivate-analytics.com
 acl allowed_domains dstdomain .publons.com
 acl allowed_domains dstdomain .clarivate.net
 acl allowed_domains dstdomain .hcaptcha.com
+acl allowed_domains dstdomain .amazonaws.com
+acl allowed_domains dstdomain .doi.org
 http_access deny CONNECT !SSL_ports
 http_access allow allowed_domains
 http_access deny all
