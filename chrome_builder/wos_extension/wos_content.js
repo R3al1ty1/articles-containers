@@ -1,5 +1,6 @@
 const SELECTORS_TO_REMOVE = [
-    'app-ins-logo' // Самый надежный селектор для удаления всего блока с логотипом
+    'app-ins-logo',
+    '#FRLinkTa-link-image-url-0'
 ];
 
 function removeElements() {
