@@ -1,31 +1,34 @@
-function removeAnnoyingElements() {
-    const institutionInfoSelector = '.els-header-institution-info';
-    const institutionInfoElement = document.querySelector(institutionInfoSelector);
-    if (institutionInfoElement) {
-        institutionInfoElement.remove();
-        console.log('[Extension] Removed institution info block:', institutionInfoElement);
-    }
+const SELECTORS_TO_REMOVE = [
+    'button[aria-label="Institutional Access"]'
+];
 
-    const popoverCloseButtonSelector = 'button[aria-label="Close"], button[aria-label="Dismiss"], button[aria-label="Dismiss tip"]';
-    
-    const closeButton = document.querySelector(popoverCloseButtonSelector);
-    
-    if (closeButton) {
-        const popover = closeButton.closest('div[role="dialog"], div[role="tooltip"]');
+function removeElements() {
+    let removedSomething = false;
+
+    for (const selector of SELECTORS_TO_REMOVE) {
+        const elements = document.querySelectorAll(selector);
         
-        if (popover) {
-            popover.remove();
-            console.log('[Extension] Removed parent popover:', popover);
-        } else {
-            const parent = closeButton.parentElement;
-            parent.remove();
-            console.log('[Extension] Removed direct parent of the close button:', parent);
+        for (const element of elements) {
+            if (selector === 'button[aria-label="Institutional Access"]') {
+                const parentToRemove = element.closest('div');
+
+                if (parentToRemove) {
+                    parentToRemove.remove();
+                    console.log('[Embase Extension] Removed parent popover for selector:', selector);
+                    removedSomething = true;
+                }
+            } else {
+                element.remove();
+                console.log('[Embase Extension] Removed element for selector:', selector);
+                removedSomething = true;
+            }
         }
     }
+    return removedSomething;
 }
 
 const observer = new MutationObserver((mutations) => {
-    removeAnnoyingElements();
+    removeElements();
 });
 
 observer.observe(document.body, {
@@ -33,5 +36,4 @@ observer.observe(document.body, {
     subtree: true
 });
 
-console.log('[Extension] Loaded and running. Performing initial cleanup.');
-removeAnnoyingElements();
+removeElements();

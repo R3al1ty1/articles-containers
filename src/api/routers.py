@@ -29,7 +29,7 @@ templates = Jinja2Templates(directory="templates")
 MAX_CONCURRENT_USERS = 3
 
 class CreateContainerRequest(BaseModel):
-    user_id: str
+    user_id: str = "1"
     website: str = "scopus"
 
 
