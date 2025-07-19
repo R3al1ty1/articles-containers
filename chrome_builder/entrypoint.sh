@@ -40,6 +40,8 @@ acl allowed_domains dstdomain .webofknowledge.com
 acl allowed_domains dstdomain .cloudfront.net
 acl allowed_domains dstdomain .clarivate-analytics.com
 acl allowed_domains dstdomain .publons.com
+acl allowed_domains dstdomain .clarivate.net
+acl allowed_domains dstdomain .hcaptcha.com
 http_access deny CONNECT !SSL_ports
 http_access allow allowed_domains
 http_access deny all
