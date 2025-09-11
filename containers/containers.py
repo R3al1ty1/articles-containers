@@ -20,7 +20,11 @@ def get_free_port():
 def launch_chrome_container(website: str):
     """
     Запускает контейнер с Chrome и возвращает его tag и порты.
-    Поддерживаемые значения для website: 'scopus', 'wos'.
+    Поддерживаемые значения для website: 'scopus', 'wos', 'embase'.
+    
+    Raises:
+        ValueError: Если указан неподдерживаемый сайт
+        RuntimeError: Если не удается собрать или запустить образ
     """
     if website not in ['scopus', 'wos', 'embase']:
         raise ValueError("Неподдерживаемый сайт. Используйте 'scopus', 'wos' или 'embase'.")
@@ -31,9 +35,37 @@ def launch_chrome_container(website: str):
         client.images.get(image_tag)
     except docker.errors.ImageNotFound:
         print(f"Образ {image_tag} не найден. Собираем...")
-        build_context_path = "/app/chrome_builder"
-        client.images.build(path=build_context_path, tag=image_tag)
-        print("Сборка завершена.")
+        
+        # Попробуем разные пути к контексту сборки
+        possible_paths = [
+            "/app/chrome_builder",  # если запускается в контейнере
+            "./chrome_builder",     # относительный путь
+            os.path.abspath("chrome_builder"),  # абсолютный путь от текущей директории
+            os.path.join(os.path.dirname(os.path.dirname(__file__)), "chrome_builder")  # путь относительно этого файла
+        ]
+        
+        build_context_path = None
+        for path in possible_paths:
+            if os.path.exists(path):
+                build_context_path = path
+                print(f"Найден контекст сборки: {build_context_path}")
+                break
+        
+        if not build_context_path:
+            raise FileNotFoundError(f"Не найден контекст сборки. Проверенные пути: {possible_paths}")
+        
+        try:
+            print("Начинаем сборку образа...")
+            client.images.build(
+                path=build_context_path, 
+                tag=image_tag,
+                rm=True,  # Удалять промежуточные контейнеры
+                nocache=False  # Использовать кэш при возможности
+            )
+            print("Сборка завершена.")
+        except docker.errors.BuildError as e:
+            print(f"Ошибка сборки образа: {e}")
+            raise RuntimeError(f"Не удалось собрать образ {image_tag}. Возможно, недостаточно памяти или неверный Dockerfile.")
 
 
     random_tag = ''.join(
@@ -50,25 +82,40 @@ def launch_chrome_container(website: str):
     host_port_novnc = get_free_port()
     host_port_squid = get_free_port()
 
-    container = client.containers.run(
-        image_tag,
-        name=container_name,
-        ports={
-            '6080/tcp': host_port_novnc,
-            '3128/tcp': host_port_squid,
-        },
-        environment={
-            'DISPLAY': ':99',
-            'WEBSITE_TARGET': website
-        },
-        volumes={
-            os.path.abspath(downloads_dir): {
-                'bind': '/root/Downloads',
-                'mode': 'rw'
-            }
-        },
-        detach=True
-    )
+    try:
+        container = client.containers.run(
+            image_tag,
+            name=container_name,
+            ports={
+                '6080/tcp': host_port_novnc,
+                '3128/tcp': host_port_squid,
+            },
+            environment={
+                'DISPLAY': ':99',
+                'WEBSITE_TARGET': website
+            },
+            volumes={
+                os.path.abspath(downloads_dir): {
+                    'bind': '/root/Downloads',
+                    'mode': 'rw'
+                }
+            },
+            detach=True
+        )
+        print(f"Контейнер {container_name} успешно запущен")
+
+    except docker.errors.APIError as e:
+        print(f"Ошибка Docker API при запуске контейнера: {e}")
+        # Удаляем созданную директорию при ошибке
+        if os.path.exists(downloads_dir):
+            shutil.rmtree(downloads_dir)
+        raise RuntimeError(f"Не удалось запустить контейнер: {e}")
+    except Exception as e:
+        print(f"Неожиданная ошибка при запуске контейнера: {e}")
+        # Удаляем созданную директорию при ошибке
+        if os.path.exists(downloads_dir):
+            shutil.rmtree(downloads_dir)
+        raise
 
     return {
         "container_id": container.id,
