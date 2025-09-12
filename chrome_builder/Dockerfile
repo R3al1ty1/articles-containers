@@ -27,7 +27,7 @@ COPY policy.json /etc/chromium-browser/policies/managed/
 WORKDIR /root
 
 RUN git clone https://github.com/novnc/noVNC.git && \
-    git clone https://github.com/novnc/websockify.git && \
+    git clone https://github.com/novnc/websockify.git /root/noVNC/utils/websockify && \
     ln -s /root/noVNC/vnc.html /root/noVNC/index.html
 
 COPY scopus_extension /root/scopus_extension/
